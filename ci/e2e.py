@@ -117,7 +117,7 @@ def run_app(pkg, flow):
 def passenger():
     p = "com.totogo.passenger"
     login("Abhijit Test"); time.sleep(4); shot(f"{p}-02-home")
-    tap("Nalhati Bazar"); time.sleep(2); shot(f"{p}-03-destination")
+    tap("Nalhati Bus Stand"); time.sleep(2); shot(f"{p}-03-destination")
     tap("Request Toto", 10); time.sleep(2); shot(f"{p}-04-fare")
     tap("Request Toto at", 10); time.sleep(4); shot(f"{p}-05-finding")
     if wait_for("Live distance", 120): shot(f"{p}-06-accepted")

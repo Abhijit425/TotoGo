@@ -110,6 +110,10 @@ fun OnboardingScreen(vm: DriverViewModel, onSubmitted: () -> Unit) {
     val ctx = LocalContext.current
     var o by remember { mutableStateOf(s.onboarding.copy(name = s.onboarding.name.ifBlank { s.name }, phone = s.onboarding.phone.ifBlank { s.phone })) }
     var error by remember { mutableStateOf<String?>(null) }
+    // Login details are saved asynchronously; fill them in as soon as they arrive.
+    LaunchedEffect(s.name, s.phone) {
+        o = o.copy(name = o.name.ifBlank { s.name }, phone = o.phone.ifBlank { s.phone })
+    }
 
     fun persist(uri: Uri?) = uri?.also { runCatching { ctx.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION) } }
     val pickProfile = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> persist(uri)?.let { o = o.copy(photoUri = it.toString()) } }
