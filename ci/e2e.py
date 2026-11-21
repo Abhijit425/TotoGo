@@ -80,6 +80,7 @@ def type_into(index, value):
 def swipe_up(): adb("shell input swipe 540 1700 540 500 300"); time.sleep(1)
 
 def slide(text):
+    failures_before = len(failures)
     n = find(text)
     if n is None: failures.append(f"no slider '{text}'"); return
     _, y, a = center(n); adb(f"shell input swipe 90 {y} 1030 {y} 900"); print(f"  slid '{text}'"); time.sleep(2)
@@ -132,14 +133,22 @@ def driver():
     tap("Submit for verification"); time.sleep(2); shot(f"{p}-03-verification")
     if wait_for("OFFLINE", 30): shot(f"{p}-04-dashboard")
     tap("OFFLINE"); time.sleep(2); shot(f"{p}-05-online")
-    if wait_for("ACCEPT", 40):
-        shot(f"{p}-06-request"); tap("ACCEPT", exact=False) if False else tap("ACCEPT")
-        time.sleep(4); shot(f"{p}-07-after-accept")
-        if find("Mark Arrived") is None and find("OFFLINE") is not None:
-            print("  lost the race (DEMO) — waiting for another request")
-            if wait_for("ACCEPT", 40): tap("ACCEPT"); time.sleep(4)
-        slide("Mark Arrived"); slide("Start Ride"); time.sleep(3); shot(f"{p}-08-trip"); slide("Complete Ride"); time.sleep(3)
-        shot(f"{p}-09-done")
+    won = False
+    for attempt in range(4):
+        if not wait_for("ACCEPT", 45): break
+        shot(f"{p}-06-request-{attempt}"); tap("ACCEPT")
+        end = time.time() + 8
+        while time.time() < end and not won:
+            won = find("Mark Arrived") is not None; time.sleep(1)
+        if won: break
+        print("  lost the race (DEMO: another driver accepted first) — waiting for the next request")
+    if won:
+        shot(f"{p}-07-to-pickup"); slide("Mark Arrived")
+        if wait_for("Start Ride", 10): slide("Start Ride")
+        time.sleep(3); shot(f"{p}-08-trip")
+        if wait_for("Complete Ride", 10): slide("Complete Ride")
+        time.sleep(3); shot(f"{p}-09-done")
+        if find("Today") is None: failures.append("did not return to dashboard after completing")
     adb("shell input keyevent 3"); time.sleep(25); shot(f"{p}-10-background")
 
 run_app("com.totogo.passenger", passenger)
