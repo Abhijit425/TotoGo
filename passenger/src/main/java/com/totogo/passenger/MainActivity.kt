@@ -135,6 +135,7 @@ fun PassengerRoot(vm: PassengerViewModel = viewModel()) {
                         })
                     }
                 }
+                com.totogo.core.debug.CrashReportDialog()
                 message?.let { msg ->
                     LaunchedEffect(msg) { kotlinx.coroutines.delay(3500); vm.clearMessage() }
                     Snackbar(Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(16.dp)) { Text(msg) }

@@ -137,7 +137,8 @@ fun TownMap(
             drawCircle(col.copy(alpha = 0.22f), 15f, o)
             drawCircle(col, 7f, o)
             drawCircle(Color.White, 2.5f, o)
-            if (scene.showLabels && zoom > 0.75f) {
+            // drawText throws if the label's top-left lies outside the canvas, so only label on-screen landmarks.
+            if (scene.showLabels && zoom > 0.75f && o.x > 0f && o.y > 20f && o.x + 60f < size.width && o.y + 20f < size.height) {
                 drawText(
                     tm, pl.name(bengali), topLeft = Offset(o.x + 12f, o.y - 14f),
                     style = TextStyle(color = Color.White.copy(alpha = 0.72f), fontSize = 10.sp, fontWeight = FontWeight.Medium),

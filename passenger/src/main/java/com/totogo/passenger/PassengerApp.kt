@@ -40,6 +40,7 @@ class PassengerApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        com.totogo.core.debug.CrashReporter.install(this)
         TotoNotifications.createChannels(this)
         prefs = AppPreferences(this)
         val initial = runBlocking { prefs.settings.first() }

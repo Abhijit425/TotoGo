@@ -120,6 +120,7 @@ fun DriverRoot(vm: DriverViewModel = viewModel()) {
                     incoming?.let { IncomingRequestScreen(it, vm) }
                 }
 
+                com.totogo.core.debug.CrashReportDialog()
                 toast?.let { msg ->
                     LaunchedEffect(msg) { kotlinx.coroutines.delay(3500); vm.clearToast() }
                     Snackbar(Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(16.dp)) { Text(msg) }
