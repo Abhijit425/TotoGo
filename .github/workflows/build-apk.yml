@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,3 +30,14 @@ jobs:
         with:
           name: TotoGo-debug-apks
           path: out/*.apk
+      - name: Publish APKs as a GitHub Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: TotoGo build ${{ github.run_number }} (debug, DEMO mode)
+          body: |
+            Debug APKs for TotoGo Passenger and TotoGo Driver.
+            Install both on Android 8.0+. Demo login OTP: 123456. All drivers, passengers and rides in DEMO mode are simulated.
+          files: out/*.apk
+          make_latest: true
