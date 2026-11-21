@@ -28,6 +28,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -360,7 +363,7 @@ fun StarRating(stars: Int, onChange: (Int) -> Unit, modifier: Modifier = Modifie
             val on = i <= stars
             val s by animateFloatAsState(if (on) 1.15f else 1f, label = "star")
             Icon(
-                if (on) androidx.compose.material.icons.Icons.Rounded.Star else androidx.compose.material.icons.Icons.Rounded.StarBorder,
+                if (on) Icons.Rounded.Star else Icons.Rounded.StarBorder,
                 null, tint = if (on) Color(0xFFFFC233) else LocalPalette.current.muted,
                 modifier = Modifier.size(size).scale(s).clickable { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onChange(i) },
             )
