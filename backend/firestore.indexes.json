@@ -1,0 +1,12 @@
+{
+  "indexes": [
+    { "collectionGroup": "rides", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "passengerId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" } ] },
+    { "collectionGroup": "rides", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "driverId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" } ] },
+    { "collectionGroup": "rides", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "ASCENDING" } ] },
+    { "collectionGroup": "rideRequests", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "driverId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" } ] },
+    { "collectionGroup": "rideRequests", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "rideId", "order": "ASCENDING" }, { "fieldPath": "status", "order": "ASCENDING" } ] },
+    { "collectionGroup": "rideRequests", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "expiresAt", "order": "ASCENDING" } ] },
+    { "collectionGroup": "drivers", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "isOnline", "order": "ASCENDING" }, { "fieldPath": "isVerified", "order": "ASCENDING" } ] }
+  ],
+  "fieldOverrides": []
+}

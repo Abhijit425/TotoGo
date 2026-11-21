@@ -1,0 +1,29 @@
+name: Build TotoGo debug APKs
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build Passenger + Driver
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :passenger:assembleDebug :driver:assembleDebug
+      - name: Collect APKs
+        run: |
+          mkdir -p out
+          cp passenger/build/outputs/apk/debug/passenger-debug.apk out/TotoGo-Passenger-debug.apk
+          cp driver/build/outputs/apk/debug/driver-debug.apk out/TotoGo-Driver-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TotoGo-debug-apks
+          path: out/*.apk

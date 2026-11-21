@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- canopy -->
+    <path android:fillColor="#FFFF7A1A" android:pathData="M30,36h46a4,4 0,0 1,4 4v2H26v-2a4,4 0,0 1,4 -4z"/>
+    <path android:fillColor="#FF1B1B1B" android:pathData="M32,42h3v20h-3zM72,42h3v20h-3z"/>
+    <!-- body -->
+    <path android:fillColor="#FFC6FF3D" android:pathData="M26,60h40c10,0 14,4 14,12H25z"/>
+    <path android:fillColor="#AAFFFFFF" android:pathData="M66,45h8v13h-8z"/>
+    <!-- bolt -->
+    <path android:fillColor="#FF0A1035" android:pathData="M48,61l-6,8h5l-3,7 9,-10h-5l3,-5z"/>
+    <!-- wheels -->
+    <path android:fillColor="#FF0D0D0D" android:pathData="M38,76m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0M72,76m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0"/>
+    <path android:fillColor="#FFBDBDBD" android:pathData="M38,76m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M72,76m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"/>
+</vector>

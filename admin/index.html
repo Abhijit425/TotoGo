@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TotoGo Admin</title>
+<style>
+  :root {
+    --bg: #050818; --bg2: #0a1035; --card: rgba(255,255,255,.055); --line: rgba(255,255,255,.1);
+    --lime: #c6ff3d; --orange: #ff7a1a; --amber: #ffb300; --cyan: #39d0ff; --red: #ff4d6d; --text: #f4f6ff; --muted: #97a0cf;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif; color: var(--text);
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(198,255,61,.12), transparent), radial-gradient(900px 700px at 100% 100%, rgba(255,122,26,.12), transparent), linear-gradient(var(--bg2), var(--bg)); min-height: 100vh; }
+  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  nav { padding: 22px 14px; border-right: 1px solid var(--line); background: rgba(0,0,0,.25); position: sticky; top: 0; height: 100vh; overflow: auto; }
+  .logo { font-size: 26px; font-weight: 900; letter-spacing: -1px; margin: 0 8px 4px; }
+  .logo span { background: linear-gradient(90deg, var(--lime), var(--orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); font-size: 12px; margin: 0 8px 18px; }
+  nav button { display: flex; width: 100%; gap: 10px; align-items: center; background: none; border: 0; color: var(--muted); padding: 10px 12px; border-radius: 12px; cursor: pointer; font: inherit; text-align: left; }
+  nav button:hover { background: var(--card); color: var(--text); }
+  nav button.on { background: linear-gradient(90deg, rgba(198,255,61,.18), rgba(198,255,61,.03)); color: var(--lime); font-weight: 700; }
+  nav .count { margin-left: auto; background: var(--orange); color: #1a0a00; border-radius: 10px; padding: 0 7px; font-size: 11px; font-weight: 800; }
+  main { padding: 24px 28px 60px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  h1 { font-size: 28px; margin: 0; letter-spacing: -.5px; }
+  .badge { background: linear-gradient(90deg, var(--orange), #ffc233); color: #1a0a00; font-weight: 900; font-size: 11px; padding: 3px 8px; border-radius: 8px; letter-spacing: 1px; }
+  .live { display: inline-flex; gap: 6px; align-items: center; color: var(--lime); font-size: 12px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 12px var(--lime); animation: blink 1s infinite alternate; }
+  @keyframes blink { from { opacity: .3 } to { opacity: 1 } }
+  .grid { display: grid; gap: 14px; }
+  .kpis { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 16px 18px; backdrop-filter: blur(14px); box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+  .kpi .l { color: var(--muted); font-size: 12px; } .kpi .v { font-size: 30px; font-weight: 900; letter-spacing: -1px; } .kpi .d { font-size: 12px; color: var(--lime); }
+  .two { grid-template-columns: 1.4fr 1fr; } @media (max-width: 1000px) { .two { grid-template-columns: 1fr; } .app { grid-template-columns: 1fr; } nav { position: static; height: auto; } }
+  h2 { font-size: 15px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  table { width: 100%; border-collapse: collapse; } th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
+  tr:hover td { background: rgba(255,255,255,.025); }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid currentColor; }
+  .s-SEARCHING { color: var(--cyan) } .s-ACCEPTED { color: var(--lime) } .s-ARRIVED { color: var(--amber) } .s-IN_PROGRESS { color: var(--orange) }
+  .s-COMPLETED { color: #7cffb2 } .s-CANCELLED, .s-NO_DRIVERS, .s-SUSPENDED, .s-REJECTED { color: var(--red) } .s-PENDING { color: var(--amber) } .s-VERIFIED { color: var(--lime) } .s-OPEN { color: var(--amber) } .s-RESOLVED { color: #7cffb2 }
+  .btn { background: linear-gradient(90deg, var(--lime), #9dff4f); color: #071000; border: 0; border-radius: 12px; padding: 7px 12px; font-weight: 800; cursor: pointer; font: inherit; font-weight: 800; }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); } .btn.red { background: var(--red); color: #fff; }
+  input, select { background: rgba(255,255,255,.06); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; width: 100%; }
+  label { color: var(--muted); font-size: 12px; display: block; margin: 8px 0 4px; }
+  canvas { width: 100%; display: block; }
+  .muted { color: var(--muted); } .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: #111a45; border: 1px solid var(--lime); padding: 12px 16px; border-radius: 14px; display: none; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <div class="logo">Toto<span>Go</span></div>
+    <div class="sub">Admin · Nalhati, Birbhum</div>
+    <div id="menu"></div>
+  </nav>
+  <main>
+    <header>
+      <h1 id="title">Overview</h1>
+      <span class="badge" id="modeBadge">DEMO DATA</span>
+      <span class="live"><span class="dot"></span> live</span>
+    </header>
+    <div id="view"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ------------------------------------------------------------------
+ * TotoGo Admin dashboard.
+ * DEMO mode (default): simulated drivers, passengers and bookings, clearly labelled.
+ * Production: fill FIREBASE_CONFIG below, sign in with an admin account (custom claim admin=true).
+ * All writes go through Cloud Functions (reviewDriverApplication, updateConfig) — never directly.
+ * ------------------------------------------------------------------ */
+const FIREBASE_CONFIG = null; // e.g. { apiKey: "...", authDomain: "...", projectId: "...", appId: "..." }
+
+const LANDMARKS = [
+  ["station","Nalhati Junction Railway Station","নলহাটি জংশন রেল স্টেশন",24.2960,87.8225],["busstand","Nalhati Bus Stand","নলহাটি বাস স্ট্যান্ড",24.2934,87.8263],
+  ["bazar","Nalhati Bazar (Market)","নলহাটি বাজার",24.2948,87.8246],["haat","Haat Tala","হাটতলা",24.2919,87.8282],["temple","Nalateswari Temple","নলাটেশ্বরী মন্দির",24.3012,87.8152],
+  ["hospital","Nalhati Rural Hospital","নলহাটি গ্রামীণ হাসপাতাল",24.2903,87.8236],["college","Hiralal Bhakat College","হীরালাল ভকত কলেজ",24.2992,87.8288],
+  ["highschool","Nalhati High School","নলহাটি উচ্চ বিদ্যালয়",24.2978,87.8193],["municipality","Nalhati Municipality Office","নলহাটি পৌরসভা",24.2940,87.8204],
+  ["police","Nalhati Police Station","নলহাটি থানা",24.2924,87.8214],["nhmore","Nalhati More (NH-14)","নলহাটি মোড়",24.2879,87.8306],["lohapur","Lohapur","লোহাপুর",24.3185,87.8105],
+  ["moregram","Moregram","মোড়গ্রাম",24.2722,87.8412],["bhadrapur","Bhadrapur","ভদ্রপুর",24.3204,87.8418],
+];
+const NAMES = ["Rafiqul Sk","Bapi Mondal","Sujit Das","Tapas Let","Abdul Karim","Pintu Ghosh","Rakesh Bagdi","Sanjay Hazra","Mithun Sheikh","Gopal Dalui"];
+const PAX = ["Rina Saha","Ashok Pal","Fatema Bibi","Subrata Roy","Mousumi Dey","Imran Ali","Puja Chatterjee","Kartik Mal","Sabina Khatun","Bikash Mal"];
+const rnd = (a, b) => a + Math.random() * (b - a), pick = (a) => a[Math.floor(Math.random() * a.length)];
+const km = (a, b) => { const R = 6371, t = (d) => d * Math.PI / 180, dl = t(b[3] - a[3]), dg = t(b[4] - a[4]);
+  const h = Math.sin(dl/2)**2 + Math.cos(t(a[3]))*Math.cos(t(b[3]))*Math.sin(dg/2)**2; return 2*R*Math.atan2(Math.sqrt(h), Math.sqrt(1-h)) * 1.3; };
+const fare = (k) => Math.max(S.fare.minimumFare, Math.round((S.fare.baseFare + S.fare.perKm * k) / 5) * 5);
+
+const S = {
+  view: "overview",
+  dispatch: { radiiKm: [2, 4, 6], roundTimeoutSec: 20, requestExpirySec: 20 },
+  fare: { baseFare: 10, perKm: 10, minimumFare: 20, minOfferRatio: 0.7, maxOfferRatio: 3 },
+  area: { name: "Nalhati", centerLat: 24.2958, centerLng: 87.8232, radiusKm: 25 },
+  drivers: NAMES.map((n, i) => ({ id: "demo-driver-" + (i + 1), name: n + " (DEMO)", phone: "+91 9•••• ••" + (11 + i), vehicle: "WB-53-E-" + (4100 + (i + 1) * 37),
+    status: i < 8 ? "VERIFIED" : "PENDING", online: i < 7, rating: +(4.3 + Math.random() * .6).toFixed(1), rides: Math.floor(rnd(150, 1500)), cancels: Math.floor(rnd(0, 8)),
+    lat: rnd(24.288, 24.304), lng: rnd(87.814, 87.832), lastSeen: Date.now() })),
+  passengers: PAX.map((n, i) => ({ id: "demo-pax-" + i, name: n + " (DEMO)", phone: "+91 7•••• ••" + (20 + i), rides: Math.floor(rnd(2, 60)), lateCancels: Math.floor(rnd(0, 3)), suspended: false })),
+  rides: [], complaints: [
+    { id: "C-101", from: "Fatema Bibi (DEMO)", about: "Bapi Mondal (DEMO)", text: "Driver asked for ₹10 more than agreed fare.", status: "OPEN", at: Date.now() - 3600e3 },
+    { id: "C-102", from: "Sujit Das (DEMO)", about: "Imran Ali (DEMO)", text: "Passenger cancelled after I arrived, twice.", status: "OPEN", at: Date.now() - 7200e3 },
+    { id: "C-103", from: "Puja Chatterjee (DEMO)", about: "App", text: "Couldn't find 'Kali Mandir Para' in search.", status: "RESOLVED", at: Date.now() - 86400e3 },
+  ],
+};
+
+// Seed 30 days of DEMO history
+(function seed() {
+  for (let d = 0; d < 30; d++) for (let i = 0; i < rnd(25, 60); i++) {
+    const a = pick(LANDMARKS), b = pick(LANDMARKS.filter((x) => x !== a)), k = km(a, b), f = fare(k) + Math.floor(rnd(0, 3)) * 5;
+    const st = Math.random() < .88 ? "COMPLETED" : (Math.random() < .5 ? "CANCELLED" : "NO_DRIVERS");
+    S.rides.push({ id: "DEMO-" + Math.random().toString(36).slice(2, 8).toUpperCase(), pax: pick(PAX) + " (DEMO)", driver: st === "NO_DRIVERS" ? "—" : pick(NAMES) + " (DEMO)",
+      from: a, to: b, km: k, fare: f, status: st, method: Math.random() < .7 ? "CASH" : "UPI", at: Date.now() - d * 86400e3 - rnd(0, 86400e3), round: 1 + Math.floor(Math.random() * 2) });
+  }
+  S.rides.sort((x, y) => y.at - x.at);
+})();
+
+// Live simulated booking feed
+const STEPS = ["SEARCHING", "ACCEPTED", "ARRIVED", "IN_PROGRESS", "COMPLETED"];
+function tick() {
+  if (Math.random() < .35) {
+    const a = pick(LANDMARKS), b = pick(LANDMARKS.filter((x) => x !== a)), k = km(a, b);
+    S.rides.unshift({ id: "DEMO-" + Math.random().toString(36).slice(2, 8).toUpperCase(), pax: pick(PAX) + " (DEMO)", driver: "—", from: a, to: b, km: k, fare: fare(k) + 5 * Math.floor(rnd(0, 3)),
+      status: "SEARCHING", method: "CASH", at: Date.now(), round: 1, live: true });
+  }
+  S.rides.filter((r) => r.live).forEach((r) => {
+    if (Math.random() < .4) {
+      const i = STEPS.indexOf(r.status);
+      if (r.status === "SEARCHING" && Math.random() < .25 && r.round < S.dispatch.radiiKm.length) { r.round++; return; }
+      if (i >= 0 && i < STEPS.length - 1) { r.status = STEPS[i + 1]; if (r.status === "ACCEPTED") r.driver = pick(S.drivers.filter((d) => d.online)).name; }
+      if (r.status === "COMPLETED") r.live = false;
+    }
+  });
+  S.drivers.forEach((d) => { if (d.online) { d.lat += rnd(-.0004, .0004); d.lng += rnd(-.0004, .0004); d.lastSeen = Date.now() - rnd(0, 15000); } });
+  if (["overview", "live", "activity"].includes(S.view)) render();
+}
+
+// ------------------------------------------------------------ views
+const VIEWS = {
+  overview: ["Overview", "📊"], live: ["Live bookings", "🛺"], drivers: ["Drivers", "🧑‍✈️"], verify: ["Driver verification", "✅"],
+  passengers: ["Passengers", "👥"], history: ["Ride history", "🗂️"], fare: ["Fare configuration", "₹"], dispatch: ["Matching & radius", "📡"],
+  areas: ["Service areas", "🗺️"], complaints: ["Complaints", "⚠️"], suspended: ["Suspended drivers", "⛔"], activity: ["Driver activity", "📍"], revenue: ["Revenue reports", "💰"],
+};
+const fmt = (t) => new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+const pill = (s) => `<span class="pill s-${s}">${s.replace("_", " ")}</span>`;
+const today0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return +d; };
+
+function menu() {
+  const pending = S.drivers.filter((d) => d.status === "PENDING").length, open = S.complaints.filter((c) => c.status === "OPEN").length;
+  document.getElementById("menu").innerHTML = Object.entries(VIEWS).map(([k, [t, i]]) =>
+    `<button class="${S.view === k ? "on" : ""}" onclick="go('${k}')"><span>${i}</span>${t}${k === "verify" && pending ? `<span class="count">${pending}</span>` : ""}${k === "complaints" && open ? `<span class="count">${open}</span>` : ""}</button>`).join("");
+}
+function go(v) { S.view = v; render(); }
+
+function kpis() {
+  const t0 = today0(), today = S.rides.filter((r) => r.at >= t0), done = today.filter((r) => r.status === "COMPLETED");
+  const active = S.rides.filter((r) => r.live && r.status !== "COMPLETED");
+  const all = S.rides.filter((r) => r.status !== "SEARCHING"), fill = all.length ? all.filter((r) => r.status === "COMPLETED").length / all.length : 0;
+  const k = (l, v, d) => `<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
+  return `<div class="grid kpis">${k("Active bookings", active.length, "right now")}${k("Online drivers", S.drivers.filter((d) => d.online).length + " / " + S.drivers.length, "verified fleet")}
+    ${k("Rides today", done.length, today.length + " requests")}${k("Fares today", "₹" + done.reduce((s, r) => s + r.fare, 0).toLocaleString("en-IN"), "paid to drivers")}
+    ${k("Fulfilment", Math.round(fill * 100) + "%", "requests → completed")}${k("Avg fare", "₹" + Math.round(done.reduce((s, r) => s + r.fare, 0) / Math.max(1, done.length)), "today")}</div>`;
+}
+
+function bars(id, values, labels, color) {
+  requestAnimationFrame(() => {
+    const c = document.getElementById(id); if (!c) return;
+    const w = c.width = c.clientWidth * 2, h = c.height = 380, g = c.getContext("2d"), max = Math.max(1, ...values), bw = w / values.length;
+    g.clearRect(0, 0, w, h);
+    values.forEach((v, i) => {
+      const bh = (v / max) * (h - 60), x = i * bw + bw * .18, y = h - 30 - bh;
+      const grd = g.createLinearGradient(0, y, 0, h - 30); grd.addColorStop(0, color); grd.addColorStop(1, "rgba(198,255,61,.08)");
+      g.fillStyle = grd; g.beginPath(); g.roundRect(x, y, bw * .64, bh, 10); g.fill();
+      g.fillStyle = "#97a0cf"; g.font = "20px system-ui"; g.textAlign = "center"; g.fillText(labels[i], x + bw * .32, h - 6);
+    });
+  });
+}
+
+function map(id) {
+  requestAnimationFrame(() => {
+    const c = document.getElementById(id); if (!c) return;
+    const w = c.width = c.clientWidth * 2, h = c.height = 640, g = c.getContext("2d");
+    const P = (lat, lng) => [w / 2 + (lng - 87.8232) * 111320 * Math.cos(24.3 * Math.PI / 180) * w / 5200, h / 2 - (lat - 24.2958) * 110540 * w / 5200];
+    g.fillStyle = "#070c2c"; g.fillRect(0, 0, w, h);
+    g.strokeStyle = "rgba(255,255,255,.04)"; for (let x = 0; x < w; x += 60) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); }
+    LANDMARKS.forEach((l) => { const [x, y] = P(l[3], l[4]); g.fillStyle = "#39d0ff"; g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill(); g.fillStyle = "rgba(255,255,255,.6)"; g.font = "18px system-ui"; g.fillText(l[1].split(" (")[0], x + 10, y - 8); });
+    S.rides.filter((r) => r.live && r.status !== "COMPLETED").forEach((r) => {
+      const [x1, y1] = P(r.from[3], r.from[4]), [x2, y2] = P(r.to[3], r.to[4]);
+      g.strokeStyle = r.status === "SEARCHING" ? "rgba(57,208,255,.7)" : "rgba(255,122,26,.85)"; g.lineWidth = 5; g.setLineDash([14, 10]); g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); g.setLineDash([]);
+      if (r.status === "SEARCHING") { const rad = S.dispatch.radiiKm[r.round - 1] * 1000 * w / 5200; g.strokeStyle = "rgba(198,255,61,.35)"; g.lineWidth = 2; g.beginPath(); g.arc(x1, y1, rad, 0, 7); g.stroke(); }
+    });
+    S.drivers.filter((d) => d.online).forEach((d) => { const [x, y] = P(d.lat, d.lng); g.fillStyle = "#c6ff3d"; g.shadowColor = "#c6ff3d"; g.shadowBlur = 16; g.beginPath(); g.roundRect(x - 10, y - 7, 20, 14, 4); g.fill(); g.shadowBlur = 0; });
+  });
+}
+
+function ridesTable(list, live) {
+  return `<table><tr><th>Ride</th><th>Passenger</th><th>Route</th><th>Driver</th><th>Fare</th><th>Status</th>${live ? "<th>Radius</th>" : "<th>Payment</th>"}<th>Time</th></tr>
+  ${list.map((r) => `<tr><td>${r.id}</td><td>${r.pax}</td><td>${r.from[1].split(" (")[0]} → ${r.to[1].split(" (")[0]}<div class="muted">${r.km.toFixed(1)} km</div></td>
+  <td>${r.driver}</td><td><b>₹${r.fare}</b></td><td>${pill(r.status)}</td><td>${live ? (r.status === "SEARCHING" ? S.dispatch.radiiKm[r.round - 1] + " km · round " + r.round : "—") : r.method}</td><td class="muted">${fmt(r.at)}</td></tr>`).join("")}</table>`;
+}
+
+function render() {
+  menu();
+  document.getElementById("title").textContent = VIEWS[S.view][0];
+  const v = document.getElementById("view");
+  const days = [...Array(7)].map((_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (6 - i)); return d; });
+  const perDay = days.map((d) => S.rides.filter((r) => r.status === "COMPLETED" && r.at >= +d && r.at < +d + 86400e3));
+
+  if (S.view === "overview") {
+    const hours = [...Array(12)].map((_, i) => S.rides.filter((r) => new Date(r.at).getHours() === 7 + i).length);
+    v.innerHTML = kpis() + `<div class="grid two" style="margin-top:14px">
+      <div class="card"><h2>🛺 Live town map <span class="badge">DEMO</span></h2><canvas id="map" style="height:320px"></canvas></div>
+      <div class="card"><h2>Requests by hour (30 days)</h2><canvas id="hrs" style="height:190px"></canvas><h2 style="margin-top:16px">Completed rides · last 7 days</h2><canvas id="wk" style="height:190px"></canvas></div></div>
+      <div class="card" style="margin-top:14px"><h2>Latest bookings</h2>${ridesTable(S.rides.slice(0, 8), true)}</div>`;
+    map("map"); bars("hrs", hours, hours.map((_, i) => (7 + i) % 12 || 12), "#ff7a1a"); bars("wk", perDay.map((x) => x.length), days.map((d) => d.toLocaleDateString("en", { weekday: "short" })), "#c6ff3d");
+  } else if (S.view === "live") {
+    const live = S.rides.filter((r) => r.live && r.status !== "COMPLETED");
+    v.innerHTML = `<div class="grid two"><div class="card"><h2>Monitoring ${live.length} active bookings</h2>${live.length ? ridesTable(live, true) : '<p class="muted">No active bookings — new DEMO requests arrive every few seconds.</p>'}</div>
+      <div class="card"><h2>Live map</h2><canvas id="map" style="height:420px"></canvas><p class="muted">Blue dashed = searching (ring = current radius). Orange = matched. Green = online Totos.</p></div></div>`;
+    map("map");
+  } else if (S.view === "drivers" || S.view === "suspended" || S.view === "activity") {
+    const list = S.view === "suspended" ? S.drivers.filter((d) => d.status === "SUSPENDED") : S.drivers;
+    v.innerHTML = `<div class="card"><table><tr><th>Driver</th><th>Vehicle</th><th>Status</th><th>Online</th><th>Rating</th><th>Rides</th><th>Cancels</th>${S.view === "activity" ? "<th>Last GPS</th><th>Location</th>" : "<th></th>"}</tr>
+      ${list.map((d) => `<tr><td><b>${d.name}</b><div class="muted">${d.phone}</div></td><td>${d.vehicle}</td><td>${pill(d.status)}</td><td>${d.online ? '<span class="live"><span class="dot"></span>online</span>' : '<span class="muted">offline</span>'}</td>
+      <td>★ ${d.rating}</td><td>${d.rides}</td><td>${d.cancels}</td>
+      ${S.view === "activity" ? `<td class="muted">${d.online ? Math.round((Date.now() - d.lastSeen) / 1000) + "s ago" : "not shared (offline)"}</td><td class="muted">${d.online ? d.lat.toFixed(4) + ", " + d.lng.toFixed(4) : "—"}</td>`
+        : `<td>${d.status === "SUSPENDED" ? `<button class="btn ghost" onclick="review('${d.id}','VERIFIED')">Reinstate</button>` : `<button class="btn red" onclick="review('${d.id}','SUSPENDED')">Suspend</button>`}</td>`}</tr>`).join("")}</table>
+      ${list.length ? "" : '<p class="muted">No suspended drivers.</p>'}</div>`;
+  } else if (S.view === "verify") {
+    const q = S.drivers.filter((d) => d.status === "PENDING");
+    v.innerHTML = `<div class="card"><h2>Verification queue</h2>${q.length ? q.map((d) => `<div class="card" style="margin-bottom:10px"><div class="row"><b style="font-size:16px">${d.name}</b>${pill(d.status)}<span class="muted">${d.phone}</span></div>
+      <div class="row muted" style="margin:8px 0">Toto: ${d.vehicle} · Licence: WB-DL-${Math.floor(rnd(1e6, 9e6))} · ID: ••••${Math.floor(rnd(1000, 9999))} · Photos: profile ✓ vehicle ✓</div>
+      <div class="row"><button class="btn" onclick="review('${d.id}','VERIFIED')">Approve</button><button class="btn ghost" onclick="review('${d.id}','REJECTED')">Request changes</button></div></div>`).join("") : '<p class="muted">All caught up 🎉</p>'}</div>`;
+  } else if (S.view === "passengers") {
+    v.innerHTML = `<div class="card"><table><tr><th>Passenger</th><th>Phone</th><th>Rides</th><th>Late cancels</th><th>Status</th><th></th></tr>${S.passengers.map((p) => `<tr><td><b>${p.name}</b></td><td>${p.phone}</td><td>${p.rides}</td><td>${p.lateCancels}</td><td>${pill(p.suspended ? "SUSPENDED" : "VERIFIED")}</td>
+      <td><button class="btn ${p.suspended ? "ghost" : "red"}" onclick="togglePax('${p.id}')">${p.suspended ? "Restore" : "Suspend"}</button></td></tr>`).join("")}</table></div>`;
+  } else if (S.view === "history") {
+    v.innerHTML = `<div class="card"><div class="row" style="margin-bottom:10px"><input id="q" placeholder="Search ride, passenger, driver, place…" oninput="S.q=this.value;render();document.getElementById('q').focus()" value="${S.q || ""}" style="max-width:380px"></div>
+      ${ridesTable(S.rides.filter((r) => !S.q || JSON.stringify([r.id, r.pax, r.driver, r.from[1], r.to[1]]).toLowerCase().includes(S.q.toLowerCase())).slice(0, 80), false)}</div>`;
+  } else if (S.view === "fare") {
+    const f = S.fare, ex = [1, 2, 3, 5].map((k) => `${k} km → ₹${fare(k)}`).join(" · ");
+    v.innerHTML = `<div class="grid two"><div class="card"><h2>Fare suggestion formula</h2>
+      ${["baseFare", "perKm", "minimumFare", "minOfferRatio", "maxOfferRatio"].map((k) => `<label>${k}</label><input id="f_${k}" type="number" step="0.1" value="${f[k]}">`).join("")}
+      <div class="row" style="margin-top:12px"><button class="btn" onclick="saveFare()">Save fare config</button></div></div>
+      <div class="card"><h2>Preview</h2><p style="font-size:18px">${ex}</p><p class="muted">Passengers may offer between ${f.minOfferRatio * 100}% and ${f.maxOfferRatio * 100}% of the suggestion. The server recomputes and clamps every offer — the app's number is never trusted.</p></div></div>`;
+  } else if (S.view === "dispatch") {
+    const d = S.dispatch;
+    v.innerHTML = `<div class="grid two"><div class="card"><h2>Nearby driver matching</h2>
+      <label>Search radii (km, increasing, comma separated)</label><input id="d_r" value="${d.radiiKm.join(", ")}">
+      <label>Round timeout (seconds before expanding)</label><input id="d_t" type="number" value="${d.roundTimeoutSec}">
+      <label>Driver request expiry (seconds)</label><input id="d_e" type="number" value="${d.requestExpirySec}">
+      <div class="row" style="margin-top:12px"><button class="btn" onclick="saveDispatch()">Save matching config</button></div></div>
+      <div class="card"><h2>How matching works</h2><ol class="muted"><li>Passenger creates a request; server validates & clamps the fare.</li><li>Eligible drivers = online + verified + not suspended + no active ride + GPS fresher than 2 min.</li>
+      <li>Round 1 notifies drivers within ${d.radiiKm[0]} km (high-priority FCM + alarm).</li><li>No acceptance in ${d.roundTimeoutSec}s → expand to ${d.radiiKm.slice(1).join(" km → ")} km. Already-notified drivers are never re-sent the same ride.</li>
+      <li>First acceptance wins inside a Firestore transaction; everyone else gets "ride taken".</li></ol></div></div>`;
+  } else if (S.view === "areas") {
+    v.innerHTML = `<div class="grid two"><div class="card"><h2>Service area</h2><label>Name</label><input value="${S.area.name}"><label>Centre</label><input value="${S.area.centerLat}, ${S.area.centerLng}"><label>Radius (km)</label><input value="${S.area.radiusKm}">
+      <p class="muted">Requests with pickup or destination outside this circle are refused by createRide.</p></div>
+      <div class="card"><h2>Local landmark database (English · বাংলা)</h2><table><tr><th>ID</th><th>English</th><th>বাংলা</th><th>Lat, Lng</th></tr>${LANDMARKS.map((l) => `<tr><td class="muted">${l[0]}</td><td>${l[1]}</td><td>${l[2]}</td><td class="muted">${l[3]}, ${l[4]}</td></tr>`).join("")}</table>
+      <p class="muted">Coordinates are approximate demo values — verify on the ground before launch.</p></div></div>`;
+  } else if (S.view === "complaints") {
+    v.innerHTML = `<div class="card"><table><tr><th>ID</th><th>From</th><th>About</th><th>Complaint</th><th>Status</th><th>When</th><th></th></tr>${S.complaints.map((c) => `<tr><td>${c.id}</td><td>${c.from}</td><td>${c.about}</td><td>${c.text}</td><td>${pill(c.status)}</td><td class="muted">${fmt(c.at)}</td>
+      <td>${c.status === "OPEN" ? `<button class="btn" onclick="resolve('${c.id}')">Resolve</button>` : ""}</td></tr>`).join("")}</table></div>`;
+  } else if (S.view === "revenue") {
+    const sum = (l) => l.reduce((s, r) => s + r.fare, 0), month = S.rides.filter((r) => r.status === "COMPLETED");
+    const commission = 0; // Launch model: zero commission. Change here when a platform fee is introduced.
+    v.innerHTML = `<div class="grid kpis"><div class="card kpi"><div class="l">Gross fares · 30 days</div><div class="v">₹${sum(month).toLocaleString("en-IN")}</div><div class="d">${month.length} rides</div></div>
+      <div class="card kpi"><div class="l">Cash share</div><div class="v">${Math.round(month.filter((r) => r.method === "CASH").length / Math.max(1, month.length) * 100)}%</div><div class="d">rest UPI</div></div>
+      <div class="card kpi"><div class="l">Platform fee</div><div class="v">₹${Math.round(sum(month) * commission)}</div><div class="d">${commission * 100}% commission (launch)</div></div></div>
+      <div class="card" style="margin-top:14px"><h2>Gross fares · last 7 days</h2><canvas id="rev" style="height:220px"></canvas></div>`;
+    bars("rev", perDay.map(sum), days.map((d) => d.toLocaleDateString("en", { weekday: "short", day: "numeric" })), "#ffb300");
+  }
+}
+
+// ------------------------------------------------------------ actions (demo: local; production: callable functions)
+function toast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.display = "block"; setTimeout(() => (t.style.display = "none"), 2600); }
+async function call(name, data) { if (!window.__fns) return; await window.__fns.httpsCallable(name)(data); }
+async function review(id, decision) { const d = S.drivers.find((x) => x.id === id); d.status = decision; if (decision !== "VERIFIED") d.online = false; await call("reviewDriverApplication", { driverId: id, decision }); toast(`${d.name} → ${decision}`); render(); }
+function togglePax(id) { const p = S.passengers.find((x) => x.id === id); p.suspended = !p.suspended; toast(`${p.name} ${p.suspended ? "suspended" : "restored"}`); render(); }
+function resolve(id) { S.complaints.find((c) => c.id === id).status = "RESOLVED"; toast("Complaint resolved"); render(); }
+async function saveFare() { ["baseFare", "perKm", "minimumFare", "minOfferRatio", "maxOfferRatio"].forEach((k) => (S.fare[k] = +document.getElementById("f_" + k).value)); await call("updateConfig", { doc: "fare", value: S.fare }); toast("Fare config saved"); render(); }
+async function saveDispatch() {
+  const r = document.getElementById("d_r").value.split(",").map(Number).filter((x) => x > 0);
+  if (!r.length || r.some((x, i) => i && x <= r[i - 1])) return toast("Radii must increase, e.g. 2, 4, 6");
+  S.dispatch = { radiiKm: r, roundTimeoutSec: +document.getElementById("d_t").value, requestExpirySec: +document.getElementById("d_e").value };
+  await call("updateConfig", { doc: "dispatch", value: S.dispatch }); toast("Matching config saved"); render();
+}
+
+// ------------------------------------------------------------ optional production wiring
+if (FIREBASE_CONFIG) {
+  document.getElementById("modeBadge").textContent = "PRODUCTION";
+  const s = (src) => new Promise((ok) => { const e = document.createElement("script"); e.src = src; e.onload = ok; document.head.appendChild(e); });
+  (async () => {
+    const v = "10.14.1";
+    await s(`https://www.gstatic.com/firebasejs/${v}/firebase-app-compat.js`);
+    await Promise.all(["auth", "firestore", "functions"].map((m) => s(`https://www.gstatic.com/firebasejs/${v}/firebase-${m}-compat.js`)));
+    firebase.initializeApp(FIREBASE_CONFIG);
+    window.__fns = firebase.app().functions("asia-south1");
+    // Sign in with an admin account (Google sign-in shown; phone works too).
+    firebase.auth().onAuthStateChanged(async (u) => {
+      if (!u) return firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+      const fs = firebase.firestore();
+      fs.collection("rides").orderBy("createdAt", "desc").limit(200).onSnapshot((snap) => {
+        S.rides = snap.docs.map((d) => { const r = d.data(); return { id: d.id, pax: r.passenger?.name || "", driver: r.driver?.name || "—", from: [0, r.pickup.nameEn, r.pickup.nameBn, r.pickup.lat, r.pickup.lng],
+          to: [0, r.destination.nameEn, r.destination.nameBn, r.destination.lat, r.destination.lng], km: r.tripKm, fare: r.finalFare || r.offeredFare, status: r.status, method: "—", at: r.createdAt, round: r.searchRound || 1, live: ["SEARCHING", "ACCEPTED", "ARRIVED", "IN_PROGRESS"].includes(r.status) }; });
+        render();
+      });
+      fs.collection("drivers").onSnapshot((snap) => { S.drivers = snap.docs.map((d) => { const x = d.data(); return { id: d.id, name: x.name, phone: x.phone, vehicle: x.vehicleNumber, status: x.verificationStatus || "PENDING", online: !!x.isOnline, rating: x.rating || 5, rides: x.totalRides || 0, cancels: x.cancelCount || 0, lat: 0, lng: 0, lastSeen: 0 }; }); render(); });
+      fs.collection("driverApplications").where("status", "==", "PENDING").onSnapshot((snap) => { snap.docs.forEach((d) => { if (!S.drivers.find((x) => x.id === d.id)) S.drivers.push({ id: d.id, name: d.get("name"), phone: d.get("phone"), vehicle: d.get("vehicleNumber"), status: "PENDING", online: false, rating: 5, rides: 0, cancels: 0 }); }); render(); });
+    });
+  })();
+} else {
+  setInterval(tick, 2500);
+}
+render();
+</script>
+</body>
+</html>

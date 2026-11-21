@@ -1,0 +1,99 @@
+rules_version = '2';
+
+// TotoGo security rules.
+// Principle: clients can READ what they're party to, but every booking state change
+// (create, accept, status, fare, cancel, rating) goes through Cloud Functions.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+    function onlyKeys(keys) { return request.resource.data.keys().hasOnly(keys); }
+
+    // ---- Users: own profile + FCM tokens. Role/suspension are server-controlled.
+    match /users/{uid} {
+      allow read: if signedIn() && (me() == uid || isAdmin());
+      allow create: if signedIn() && me() == uid
+        && onlyKeys(['name', 'phone', 'photo', 'language', 'fcmTokens', 'emergencyName', 'emergencyPhone']);
+      allow update: if signedIn() && me() == uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['name', 'photo', 'language', 'fcmTokens', 'emergencyName', 'emergencyPhone']);
+      allow write: if isAdmin();
+    }
+
+    // ---- Drivers: verification, availability, ratings — functions/admin only.
+    match /drivers/{driverId} {
+      allow read: if signedIn() && (me() == driverId || isAdmin());
+      allow write: if false;
+    }
+
+    // ---- Driver onboarding application (admin reviews it).
+    match /driverApplications/{uid} {
+      allow read: if signedIn() && (me() == uid || isAdmin());
+      allow create, update: if signedIn() && me() == uid
+        && request.resource.data.status == 'PENDING'
+        && onlyKeys(['name', 'phone', 'vehicleNumber', 'licenceNumber', 'idNumberLast4', 'upiId', 'status', 'submittedAt', 'photoPath', 'vehiclePhotoPath']);
+      allow update: if isAdmin();
+    }
+
+    // ---- Live driver GPS. Written by the driver only while online; readable by the matched passenger.
+    match /driverLocations/{driverId} {
+      allow write: if signedIn() && me() == driverId
+        && get(/databases/$(database)/documents/drivers/$(driverId)).data.isOnline == true
+        && onlyKeys(['lat', 'lng', 'heading', 'activeRideId', 'updatedAt'])
+        && request.resource.data.lat is number && request.resource.data.lng is number
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if signedIn() && me() == driverId;
+      allow read: if signedIn() && (
+        me() == driverId || isAdmin() ||
+        (resource.data.activeRideId != null
+          && get(/databases/$(database)/documents/rides/$(resource.data.activeRideId)).data.passengerId == me()
+          && get(/databases/$(database)/documents/rides/$(resource.data.activeRideId)).data.driverId == driverId
+          && get(/databases/$(database)/documents/rides/$(resource.data.activeRideId)).data.status in ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'])
+      );
+    }
+
+    // ---- Rides: read by participants; never written by clients.
+    match /rides/{rideId} {
+      allow read: if signedIn() && (resource.data.passengerId == me() || resource.data.driverId == me() || isAdmin());
+      allow write: if false;
+    }
+
+    // ---- Offers sent to drivers.
+    match /rideRequests/{requestId} {
+      allow read: if signedIn() && (resource.data.driverId == me() || isAdmin());
+      allow write: if false;
+    }
+
+    match /passengerLocks/{uid} { allow read, write: if false; }
+
+    match /payments/{paymentId} {
+      allow read: if signedIn() && (resource.data.passengerId == me() || resource.data.driverId == me() || isAdmin());
+      allow write: if false;
+    }
+
+    // ---- Admin-configurable dispatch, fare, service area.
+    match /config/{doc} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // ---- Complaints & offline feedback.
+    match /complaints/{id} {
+      allow create: if signedIn() && request.resource.data.uid == me() && request.resource.data.text is string && request.resource.data.text.size() < 2000;
+      allow read: if signedIn() && (resource.data.uid == me() || isAdmin());
+      allow update: if isAdmin();
+    }
+    match /feedbackQueue/{rideId} {
+      allow create, update: if signedIn() && request.resource.data.uid == me();
+      allow read: if isAdmin();
+    }
+
+    // ---- Landmarks (local Bengali/English place database).
+    match /landmarks/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
