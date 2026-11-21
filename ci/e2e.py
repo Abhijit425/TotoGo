@@ -74,7 +74,7 @@ def type_into(index, value):
     e = edit_texts()
     if len(e) <= index: failures.append(f"no text field #{index}"); return
     x, y, _ = center(e[index]); adb(f"shell input tap {x} {y}"); time.sleep(0.6)
-    adb(f"shell input text '{value}'"); time.sleep(0.6); adb("shell input keyevent 111")  # ESC hides IME
+    adb("shell input text " + value.replace(" ", "%s")); time.sleep(0.6); adb("shell input keyevent 111")  # ESC hides IME
     print(f"  typed '{value}' into field #{index}")
 
 def swipe_up(): adb("shell input swipe 540 1700 540 500 300"); time.sleep(1)
@@ -92,7 +92,7 @@ def login(name):
     tap("Mobile number", 20, required=False) or type_into(0, "")
     type_into(0, "9876543210"); tap("Send OTP")
     type_into(0, "123456"); tap("Verify")
-    type_into(0, name); tap("go", 10)
+    type_into(0, name); tap("Let's go", 10)
 
 def run_app(pkg, flow):
     print(f"\n=== {pkg} ===")
@@ -120,7 +120,7 @@ def passenger():
     tap("Nalhati Bazar"); time.sleep(2); shot(f"{p}-03-destination")
     tap("Request Toto", 10); time.sleep(2); shot(f"{p}-04-fare")
     tap("Request Toto at", 10); time.sleep(4); shot(f"{p}-05-finding")
-    if wait_for("Call", 90): shot(f"{p}-06-accepted")
+    if wait_for("Live distance", 120): shot(f"{p}-06-accepted")
     if wait_for("Arriving at", 150): shot(f"{p}-07-tracking")
     if wait_for("arrived!", 200): shot(f"{p}-08-complete"); tap("Done")
     time.sleep(2); tap("Translate", 3, required=False); shot(f"{p}-09-home-after")
