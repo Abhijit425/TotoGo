@@ -82,7 +82,7 @@ def swipe_up(): adb("shell input swipe 540 1700 540 500 300"); time.sleep(1)
 def slide(text):
     n = find(text)
     if n is None: failures.append(f"no slider '{text}'"); return
-    _, y, a = center(n); adb(f"shell input swipe {a[0] + 45} {y} {a[2] - 10} {y} 700"); print(f"  slid '{text}'"); time.sleep(2)
+    _, y, a = center(n); adb(f"shell input swipe 90 {y} 1030 {y} 900"); print(f"  slid '{text}'"); time.sleep(2)
 
 def crashed():
     log = adb("logcat -d -b crash")

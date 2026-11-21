@@ -315,23 +315,28 @@ fun SlideToConfirm(label: String, color: Color, onConfirm: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
     var drag by remember(label) { mutableFloatStateOf(0f) }
+    val confirm by androidx.compose.runtime.rememberUpdatedState(onConfirm)
     BoxWithConstraints(
         Modifier.fillMaxWidth().height(68.dp).clip(RoundedCornerShape(34.dp))
             .background(Brush.horizontalGradient(listOf(color.copy(alpha = 0.25f), color.copy(alpha = 0.08f))))
             .border(1.5.dp, color.copy(alpha = 0.6f), RoundedCornerShape(34.dp))
     ) {
         val maxPx = with(density) { (maxWidth - 64.dp).toPx() }
+        // The whole bar accepts the drag, so it works wherever the thumb lands.
+        Box(
+            Modifier.fillMaxSize().pointerInput(label, maxPx) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        if (drag > maxPx * 0.75f) { haptic.performHapticFeedback(HapticFeedbackType.LongPress); confirm() }
+                        drag = 0f
+                    },
+                    onDragCancel = { drag = 0f },
+                ) { change, d -> change.consume(); drag = (drag + d).coerceIn(0f, maxPx) }
+            }
+        )
         Text(label, color = Color.White, style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Center))
         Box(
-            Modifier.offset { IntOffset(drag.roundToInt(), 0) }.padding(4.dp).size(60.dp).clip(CircleShape).background(color)
-                .pointerInput(label) {
-                    detectHorizontalDragGestures(
-                        onDragEnd = {
-                            if (drag > maxPx * 0.82f) { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onConfirm() }
-                            drag = 0f
-                        },
-                    ) { _, d -> drag = (drag + d).coerceIn(0f, maxPx) }
-                },
+            Modifier.offset { IntOffset(drag.roundToInt(), 0) }.padding(4.dp).size(60.dp).clip(CircleShape).background(color),
             contentAlignment = Alignment.Center,
         ) { Icon(Icons.Rounded.ChevronRight, null, tint = Color(0xFF00140A), modifier = Modifier.size(34.dp)) }
     }
