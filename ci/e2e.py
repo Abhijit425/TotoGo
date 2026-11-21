@@ -15,11 +15,21 @@ def shot(name):
     sh(f"adb exec-out screencap -p > {OUT}/{name}.png")
     print(f"  [screenshot] {name}")
 
+def dismiss_system_dialogs(x):
+    if "isn't responding" in x or "keeps stopping" in x:
+        for label in ("Close app", "Wait"):
+            m = re.search(r'text="%s"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"' % label, x)
+            if m:
+                a = list(map(int, m.groups())); adb(f"shell input tap {(a[0]+a[2])//2} {(a[1]+a[3])//2}"); print(f"  dismissed system dialog ({label})"); time.sleep(1); return True
+    return False
+
 def nodes():
-    for _ in range(3):
-        adb("shell uiautomator dump /sdcard/ui.xml")
+    for _ in range(4):
+        out = adb("shell uiautomator dump /sdcard/ui.xml")
+        if "ERROR" in out: print("  uiautomator:", out.strip()[:120])
         x = adb("shell cat /sdcard/ui.xml")
         if "<hierarchy" in x:
+            if dismiss_system_dialogs(x): continue
             try:
                 return list(ET.fromstring(x[x.index("<?xml"):] if "<?xml" in x else x).iter("node"))
             except Exception:
@@ -86,6 +96,7 @@ def login(name):
 
 def run_app(pkg, flow):
     print(f"\n=== {pkg} ===")
+    adb("shell settings put global hide_error_dialogs 1")
     adb("logcat -c"); adb("logcat -b crash -c")
     adb(f"shell pm clear {pkg}")
     for p in ["POST_NOTIFICATIONS", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]:
